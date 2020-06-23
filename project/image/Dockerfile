@@ -1,8 +1,12 @@
-FROM ubuntu:18.04
+FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04
+MAINTAINER Vladislav Belavin <belavin@phystech.edu>
 
-ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 LC_ALL=C.UTF-8
+# not sure if we need this for k8s version 
+# USER root
 
-LABEL maintainer="SageMath, Inc. <office@sagemath.com>"
+# cuda
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/lib
+ENV NUMBAPRO_NVVM=/usr/local/cuda/nvvm/lib64/libnvvm.so
 
 # So we can source (http://goo.gl/oBPi5G), which we will do in build.sh.
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
@@ -89,7 +93,13 @@ RUN \
                         flex bison libreadline-dev libz-dev libssl-dev libpq5 libpq-dev vim telnet build-essential \
   && apt-get clean && apt-get -y autoremove
 
-
+# cure prereqs 
+RUN apt-get -y update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-change-held-packages apt-utils curl \
+    bzip2 gcc git wget g++ build-essential libc6-dev make pkg-config \
+    libcudnn7 libnccl2 libnccl-dev libssl1.0.0 libssl-dev && \
+    apt-get clean -y && rm -rf /var/lib/apt/lists/*
+    
 ## Xpra backend support -- we have to use the debs from xpra.org,
 ## Since the official distro packages are ancient.
 RUN \
@@ -111,6 +121,18 @@ RUN \
 # Jupyter widgets support
 RUN pip install --no-cache-dir ipyleaflet
 RUN pip3 install --no-cache-dir ipyleaflet
+
+# scipy stuff
+RUN pip3 install --no-cache-dir matplotlib bcolz paramiko \
+    nose seaborn graphviz scikit-learn pip numpy scipy jupyter matplotlib \
+    tqdm pandas tqdm psutil Cython mkl mkl-include numpy ninja pyyaml setuptools cmake cffi typing
+
+# torch
+RUN pip3 install --no-cache-dir pip torch torchvision
+
+# tf
+RUN pip3 install --no-cache-dir --upgrade tensorflow
+
 
 # octave kernel
 RUN pip install octave_kernel
