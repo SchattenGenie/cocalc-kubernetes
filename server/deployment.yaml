@@ -22,7 +22,7 @@ spec:
       containers:
       - env:
         - name: KUBERNETES_REGISTRY
-          value: sagemathinc
+          value: vbelavin 
         image: sagemathinc/cocalc-kubernetes-server:latest
         name: cocalc-kubernetes-server
         ports:
@@ -42,9 +42,10 @@ spec:
           privileged: true
         volumeMounts:
         - mountPath: /projects
-          name: projects
+          name: cocalc-projects-storage
       serviceAccountName: cocalc-kubernetes-server
       terminationGracePeriodSeconds: 15
       volumes:
-      - emptyDir: {}
-        name: projects
+        - name: cocalc-projects-storage
+          persistentVolumeClaim:
+            claimName: cocalc-projects-claim

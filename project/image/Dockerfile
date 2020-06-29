@@ -14,7 +14,7 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 # Useful code to get stuff done -- move up to the top when stable.
 RUN \
      apt-get update \
-  && apt-get install -y  \
+     && DEBIAN_FRONTEND=noninteractive apt-get install -y  \
        gnupg2 \
        openssh-server \
        vim \
@@ -88,8 +88,8 @@ RUN \
 
 # Install prerequisites ubuntu packages for building the project nodejs server code.
 RUN \
-     apt-get update && apt-get upgrade -y \
-  && apt-get install -y gnupg2 curl wget python3 python python-pip git make g++ dpkg-dev \
+     apt-get update && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y gnupg2 curl wget python3 python python-pip git make g++ dpkg-dev \
                         flex bison libreadline-dev libz-dev libssl-dev libpq5 libpq-dev vim telnet build-essential \
   && apt-get clean && apt-get -y autoremove
 
@@ -108,7 +108,7 @@ RUN \
   && curl https://xpra.org/gpg.asc | apt-key add - \
   && echo "deb http://xpra.org/ bionic main" > /etc/apt/sources.list.d/xpra.list \
   && apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y xpra
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y xpra && apt-get clean && apt-get -y autoremove
 
 ## X11 apps to make x11 support useful.
 ## Will move this up in Dockerfile once stable.
@@ -116,7 +116,7 @@ RUN \
      apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y x11-apps dbus-x11 gnome-terminal \
      vim-gtk lyx libreoffice inkscape gimp chromium-browser texstudio evince mesa-utils \
-     xdotool xclip x11-xkb-utils
+     xdotool xclip x11-xkb-utils && apt-get clean && apt-get -y autoremove
 
 # Jupyter widgets support
 RUN pip install --no-cache-dir ipyleaflet
@@ -266,4 +266,3 @@ EXPOSE 2222 6000 6001
 
 ENTRYPOINT ["/cocalc/bin/tini", "--"]
 CMD ["sh", "-c", "env -i /cocalc/init/init.sh $COCALC_PROJECT_ID"]
-
