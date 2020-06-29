@@ -53,6 +53,9 @@ export NODE_ENV=production
 export SCREENDIR="/tmp/screen"
 export TERM="xterm-256color"
 export MKL_THREADING_LAYER="GNU"    # mainly for theano, inside of pymc3
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/lib
+export NUMBAPRO_NVVM=/usr/local/cuda/nvvm/lib64/libnvvm.so
+
 
 # X11: to run QT based apps like octave
 export QT_QPA_PLATFORM=xcb
