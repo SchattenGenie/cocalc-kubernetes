@@ -49,7 +49,7 @@ ARG branch=HEAD
 
 # Pull latest source code for CoCalc and checkout requested branch (or HEAD)
 RUN \
-     umask 022 && git clone https://github.com/sagemathinc/cocalc.git \
+     umask 022 && git clone https://github.com/marts2007/cocalc.git \
   && cd /cocalc && git pull && git fetch origin && git checkout ${branch:-HEAD}
 
 # Build and install all deps

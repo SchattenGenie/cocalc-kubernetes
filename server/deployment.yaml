@@ -6,6 +6,10 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/limit-connections: '100'
+    nginx.ingress.kubernetes.io/limit-rps: '5'
+    nginx.ingress.kubernetes.io/limit-rpm: '60'
+    nginx.ingress.kubernetes.io/proxy-body-size: 8m
 spec:
   tls:
   - hosts:
@@ -57,7 +61,8 @@ spec:
       - env:
         - name: KUBERNETES_REGISTRY
           value: vbelavin 
-        image: sagemathinc/cocalc-kubernetes-server:latest
+        #image: sagemathinc/cocalc-kubernetes-server:latest
+        image: marts2007/cocalc-kubernetes-server
         name: cocalc
         ports:
         - containerPort: 80
@@ -77,9 +82,16 @@ spec:
         volumeMounts:
         - mountPath: /projects
           name: cocalc-projects-storage
+        - name: azure-backup
+          mountPath: backup
       serviceAccountName: cocalc-kubernetes-server
       terminationGracePeriodSeconds: 15
       volumes:
         - name: cocalc-projects-storage
           persistentVolumeClaim:
             claimName: cocalc-projects-claim
+        - name: azure-backup
+          azureFile:
+            secretName: azure-secret-cocalc
+            shareName: cocalc
+            readOnly: false
