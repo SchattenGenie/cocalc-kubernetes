@@ -10,18 +10,21 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV COCALC_KUBERNETES yes
 
 # So we can source (see http://goo.gl/oBPi5G), e.g., smc-env below.
+RUN chmod 1777 /tmp
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
+RUN echo 0
 # Install the deps for building and using cocalc's server.
 RUN \
      umask 022 && apt-get update \
   && apt-get install -y wget git make g++ dpkg-dev flex curl wget \
      bison libreadline-dev libz-dev libssl-dev \
-      python3-yaml  python-pip \
+     python3-yaml  python3-pip python-pip \
      libpq5 libpq-dev postgresql-client postgresql postgresql-contrib \
      haproxy \
      nginx \
      rsync \
+  && pip3 install pip -U \
   && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
   && apt-get install -y nodejs \
   && npm install coffeescript -g
@@ -48,14 +51,17 @@ RUN apt-get install -y nfs-kernel-server
 ARG branch=HEAD
 
 # Pull latest source code for CoCalc and checkout requested branch (or HEAD)
+RUN echo 14
+# SchattenGenie sagemathinc
 RUN \
-     umask 022 && git clone https://github.com/marts2007/cocalc.git \
+     umask 022 && git clone https://github.com/SchattenGenie/cocalc.git \ 
   && cd /cocalc && git pull && git fetch origin && git checkout ${branch:-HEAD}
 
 # Build and install all deps
 # CRITICAL to install first web, then compute, since compute precompiles all the .js
 # for fast startup, but unfortunately doing so breaks ./install.py all --web, since
 # the .js files laying around somehow mess up cjsx loading.
+RUN ldconfig 
 RUN umask 022 && cd /cocalc/src && . ./smc-env && ./install.py all --web
 RUN umask 022 && cd /cocalc/src && . ./smc-env && ./install.py all --compute
 RUN rm -rf /root/.npm /root/.node-gyp/

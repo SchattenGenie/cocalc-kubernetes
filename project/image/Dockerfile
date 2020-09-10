@@ -10,6 +10,7 @@ ENV NUMBAPRO_NVVM=/usr/local/cuda/nvvm/lib64/libnvvm.so
 
 # So we can source (http://goo.gl/oBPi5G), which we will do in build.sh.
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN chmod 1777 /tmp
 
 # Useful code to get stuff done -- move up to the top when stable.
 RUN \
@@ -174,7 +175,8 @@ RUN \
 # RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'uuid', 'digest'), repos='http://cran.us.r-project.org'); devtools::install_github('IRkernel/IRkernel')" | R --no-save
 
 # Get the source code of cocalc, putting it at /cocalc
-RUN umask 022 && git clone https://github.com/sagemathinc/cocalc.git
+RUN echo 19
+RUN umask 022 && git clone https://github.com/SchattenGenie/cocalc.git
 
 # tini: https://github.com/krallin/tini
 # This is also included in Docker itself via the `--init` flag
@@ -257,12 +259,60 @@ RUN umask 022 \
 RUN umask 022 \
   && echo "install.packages('knitr');" | R --no-save
 
+RUN pip3 install -U pip
+RUN pip3 install -U matplotlib requests scipy tables requests tabulate && rm -rf ~/.cache/pip
+
+# install xgboost
+#RUN cd ~ && git clone --recursive https://github.com/dmlc/xgboost && cd xgboost && \
+#    mkdir build && cd build && cmake .. -DUSE_CUDA=ON && make -j && \
+#    cd ../python-package && python3 setup.py install --use-cuda --use-nccl
+
+# install catboost
+RUN pip3 install catboost xgboost lightgbm && rm -rf ~/.cache/pip
+
+# install lightgbm not working
+# RUN pip3 install lightgbm --install-option='--gpu' && rm -rf ~/.cache/pip
+# RUN apt-get update && \
+#    apt-get install -y git cmake opencl-headers build-essential libboost-dev libboost-system-dev libboost-filesystem-dev && \
+#    mkdir -p /etc/OpenCL/vendors && echo "/usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd && \
+#    git clone --recursive https://github.com/microsoft/LightGBM.git && \
+#    cd LightGBM/python-package && \
+#    python3 setup.py install --gpu --opencl-include-dir=/usr/local/cuda/include/ --opencl-library=/usr/local/cuda/lib64/libOpenCL.so && \
+#    apt-get clean
+    
+
+# install catboost from source
+#RUN apt-cache policy clang-6.0 && apt-get update && \
+#    DEBIAN_FRONTEND=noninteractive apt-get install -y clang && \
+#    git clone https://github.com/catboost/catboost.git && \
+#    cd catboost/catboost/python-package/catboost && \
+#    ../../../ya make -r -DUSE_ARCADIA_PYTHON=no -DUSE_SYSTEM_PYTHON=3.6 -DCUDA_ROOT=/usr/local/cuda -DCUDA_HOST_COMPILER=/usr/bin/clang-6.0 && \
+#    apt-get clean
+
+RUN pip3 install --use-feature=2020-resolver -U pyasn1 tensorboard mlxtend tensorflow transformers torchtext pynvml urllib3 comet_ml pyro-ppl numexpr pyfftw numba scikit-optimize gpytorch botorch 
+RUN cd root && git clone https://github.com/ocelot-collab/ocelot.git && \
+    cd ocelot && pip install -e . && cd .. && \
+    git clone https://gitlab.com/lambda-hse/mlhep-2020-fel-competition.git fel && \
+    cd fel && pip3 install -e . && cd .. && \
+    pip3 install scikit-optimize gpytorch botorch && rm -rf ~/.cache/pip && \
+    pip3 install git+https://github.com/yandexdataschool/mlhep2019.git && rm -rf ~/.cache/pip
+
+RUN chmod 1777 /tmp
+RUN apt-get update && apt-get install -y ffmpeg && apt-get clean
+
+RUN echo 'user:$6$saltsalt$CJ//g7R/HZsF02WnJOpDQIE0a8UaHGu8tc1HD.F2TDLKbS3DoA/EmDMIBwBI6c.LZJYQedDChLPhOLrjOMzQ/0' | chpasswd -e && adduser user sudo
 # Switch to being the non-privileged user.
+# RUN umask 022 && NVM_DIR=/cocalc/nvm bash && source /cocalc/nvm/nvm.sh && npm install nodemon -g
+# RUN sed -i '$ d' /cocalc/init/init.sh
+# RUN echo "exec nodemon -V --legacy-watch /cocalc/src/smc-project/local_hub.js --tcp_port 6000 --raw_port 6001" >>   /cocalc/init/init.sh
 USER user
 
 WORKDIR /home/user
 
 EXPOSE 2222 6000 6001
+
+RUN touch /home/user/all_logs.log
+RUN touch /home/user/logs_node.log
 
 ENTRYPOINT ["/cocalc/bin/tini", "--"]
 CMD ["sh", "-c", "env -i /cocalc/init/init.sh $COCALC_PROJECT_ID"]

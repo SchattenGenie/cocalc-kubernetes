@@ -69,3 +69,4 @@ fi
 
 export SAGE_ATLAS_LIB=/usr/lib/   # do not build ATLAS
 export SHELL=/bin/bash
+

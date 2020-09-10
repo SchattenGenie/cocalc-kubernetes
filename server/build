@@ -1,4 +1,4 @@
 set -ev
 cd image
-docker build -t cocalc-kubernetes-server .
+docker build --no-cache  -t cocalc-kubernetes-server .
 

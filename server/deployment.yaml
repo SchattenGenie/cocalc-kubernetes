@@ -6,17 +6,17 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/limit-connections: '100'
-    nginx.ingress.kubernetes.io/limit-rps: '5'
+    nginx.ingress.kubernetes.io/limit-connections: '200'
+    nginx.ingress.kubernetes.io/limit-rps: '25'
     nginx.ingress.kubernetes.io/limit-rpm: '60'
     nginx.ingress.kubernetes.io/proxy-body-size: 8m
 spec:
   tls:
   - hosts:
-    - mlhep.coresearch.club
+    - mlhep-test.coresearch.club
     secretName: cocalc-tls
   rules:
-  - host: mlhep.coresearch.club
+  - host: mlhep-test.coresearch.club
     http:
       paths:
        -  backend:

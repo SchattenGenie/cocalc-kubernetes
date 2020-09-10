@@ -55,7 +55,15 @@ export TERM="xterm-256color"
 export MKL_THREADING_LAYER="GNU"    # mainly for theano, inside of pymc3
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/lib
 export NUMBAPRO_NVVM=/usr/local/cuda/nvvm/lib64/libnvvm.so
-
+function ipython() {
+        command ipython "$@" > /home/user/all_logs.log 2>&1
+}
+function python3() {
+        command /usr/bin/python3 "$@" > /home/user/all_logs.log 2>&1
+}
+function /usr/bin/python3() {
+        command /usr/bin/python3 "$@" > /home/user/all_logs.log 2>&1
+}
 
 # X11: to run QT based apps like octave
 export QT_QPA_PLATFORM=xcb
@@ -105,6 +113,4 @@ date -Ins
 # 10 below is to select node version 10
 nvm use --delete-prefix 10
 date -Ins
-exec node /cocalc/src/smc-project/local_hub.js --tcp_port 6000 --raw_port 6001
-
-
+exec node /cocalc/src/smc-project/local_hub.js --tcp_port 6000 --raw_port 6001 # >> /home/user/logs_node.log 2>1&
